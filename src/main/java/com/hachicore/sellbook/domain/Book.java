@@ -31,6 +31,7 @@ public class Book {
 
     private Integer price;
 
+    @Builder.Default
     @OneToMany(mappedBy = "book", cascade = CascadeType.ALL)
     private List<SecondPrice> secondPrices = new ArrayList<>();
 

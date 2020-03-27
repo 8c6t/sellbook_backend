@@ -55,7 +55,7 @@ public class AladinSearchApi implements BookSearchApi {
                 .queryParam("Sort", "Title")
                 .queryParam("searchTarget", "Book")
                 .queryParam("start", pageable.getPageNumber() + 1)
-                .queryParam("MaxResults", pageable.getPageNumber())
+                .queryParam("MaxResults", pageable.getPageSize())
                 .queryParam("Output", "js")
                 .queryParam("Version", properties.getVersion())
                 .build().toUri();

@@ -15,7 +15,10 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 @Service
@@ -67,12 +70,28 @@ public class SearchService {
         // 중고 가격 저장시 JPA 라이프사이클 문제로 1번 조회
         alreadySavedBooks = bookRepository.findAllByIsbnIn(isbnList);
 
-        return alreadySavedBooks;
+        return sortByIsbn(alreadySavedBooks, isbnList);
     }
 
     private void saveFilteredBooks(List<Book> books, List<Book> savedBooks) {
         books.removeAll(savedBooks);
         bookRepository.saveAll(books);
+    }
+
+    private List<Book> sortByIsbn(List<Book> alreadySavedBooks, List<String> isbnList) {
+        Book[] result = new Book[isbnList.size()];
+
+        Map<String, Integer> map = new HashMap<>();
+        for (int i = 0; i < isbnList.size(); i++) {
+            map.put(isbnList.get(i), i);
+        }
+
+        for (int i = 0; i < map.size(); i++) {
+            Integer curr = map.get(alreadySavedBooks.get(i).getIsbn());
+            result[curr] = alreadySavedBooks.get(i);
+        }
+
+        return Arrays.asList(result);
     }
 
     private List<Book> mapToEntity(List<? extends BookResponse> data) {

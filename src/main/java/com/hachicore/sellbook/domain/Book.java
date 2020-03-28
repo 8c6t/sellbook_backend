@@ -3,11 +3,12 @@ package com.hachicore.sellbook.domain;
 import lombok.*;
 
 import javax.persistence.*;
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 
 @Entity
-@Getter @EqualsAndHashCode(of = "id")
+@Getter @EqualsAndHashCode(of = "isbn")
 @Builder @NoArgsConstructor(access = AccessLevel.PROTECTED) @AllArgsConstructor
 @ToString(exclude = "secondPrices")
 public class Book {
@@ -31,8 +32,14 @@ public class Book {
 
     private Integer price;
 
+    private LocalDate updatedAt;
+
     @Builder.Default
     @OneToMany(mappedBy = "book", cascade = CascadeType.ALL)
     private List<SecondPrice> secondPrices = new ArrayList<>();
+
+    public void updateSecondPriceDate() {
+        this.updatedAt = LocalDate.now();
+    }
 
 }

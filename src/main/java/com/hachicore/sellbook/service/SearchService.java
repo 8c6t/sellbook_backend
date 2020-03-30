@@ -4,7 +4,9 @@ import com.hachicore.sellbook.api.search.BookSearchApi;
 import com.hachicore.sellbook.api.search.dto.BookResponse;
 import com.hachicore.sellbook.api.search.dto.SearchApiResponse;
 import com.hachicore.sellbook.api.secondprice.SecondPriceParseApi;
+import com.hachicore.sellbook.api.secondprice.lambda.dto.SecondPriceResponse;
 import com.hachicore.sellbook.domain.Book;
+import com.hachicore.sellbook.domain.SecondPrice;
 import com.hachicore.sellbook.dto.BookDto;
 import com.hachicore.sellbook.repository.BookRepository;
 import com.hachicore.sellbook.repository.SecondPriceRepository;
@@ -15,6 +17,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDate;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
@@ -32,7 +35,7 @@ public class SearchService {
     private final BookRepository bookRepository;
     private final SecondPriceRepository secondPriceRepository;
 
-    /* TODO: 2020.03.27. search 구현
+    /*
      * [책 저장 흐름]
      * 1. API 호출
      * 2. DB 내 유무 조회
@@ -52,9 +55,13 @@ public class SearchService {
 
         List<Book> savedBookList = saveBooks(searchBookList);
 
-        // TODO: 2020.03.27. 중고 가격 저장 로직 구현
+        saveSecondPrices(savedBookList);
 
-        return new PageImpl(mapToDto(savedBookList), searchResult.getPageable(), searchResult.getTotalCount());
+        return new PageImpl(
+                mapToDto(savedBookList),
+                searchResult.getPageable(),
+                searchResult.getTotalCount()
+        );
     }
 
     private List<Book> saveBooks(List<Book> searchBookList) {
@@ -68,7 +75,7 @@ public class SearchService {
         }
 
         // 중고 가격 저장시 JPA 라이프사이클 문제로 1번 조회
-        alreadySavedBooks = bookRepository.findAllByIsbnIn(isbnList);
+        alreadySavedBooks = bookRepository.findWithTodaySecondPrice(isbnList);
 
         return sortByIsbn(alreadySavedBooks, isbnList);
     }
@@ -92,6 +99,32 @@ public class SearchService {
         }
 
         return Arrays.asList(result);
+    }
+
+    private void saveSecondPrices(List<Book> savedBooks) {
+        List<Book> filteredList = savedBooks.stream()
+                .filter(e -> e.getUpdatedAt() == null || e.getUpdatedAt().isBefore(LocalDate.now()))
+                .collect(Collectors.toList());
+
+        if (filteredList.size() > 0) {
+            List<String> filteredIsbnList = getIsbnList(filteredList);  // 당일 기준으로 필터링
+            List<SecondPriceResponse> parseResult = priceParseApi.parseSecondPrices(filteredIsbnList);  // DB에 없으면 API 호출
+
+            List<SecondPrice> secondPrices = parseResult.stream()
+                    .map(secondPriceDto -> {
+                        Book savedBook = savedBooks.stream()
+                                .filter(book -> book.getIsbn().equals(secondPriceDto.getIsbn13()))
+                                .findFirst().get();
+
+                        SecondPrice secondPrice = secondPriceDto.toEntity();
+                        secondPrice.addBook(savedBook);
+                        return secondPrice;
+                    })
+                    .collect(Collectors.toList());
+
+            // API 결과 저장
+            secondPriceRepository.saveAll(secondPrices);
+        }
     }
 
     private List<Book> mapToEntity(List<? extends BookResponse> data) {

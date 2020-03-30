@@ -1,6 +1,7 @@
 package com.hachicore.sellbook.domain;
 
 import lombok.*;
+import org.hibernate.annotations.BatchSize;
 
 import javax.persistence.*;
 import java.time.LocalDate;
@@ -36,6 +37,7 @@ public class Book {
 
     @Builder.Default
     @OneToMany(mappedBy = "book", cascade = CascadeType.ALL)
+    @BatchSize(size = 100)
     private List<SecondPrice> secondPrices = new ArrayList<>();
 
     public void updateSecondPriceDate() {

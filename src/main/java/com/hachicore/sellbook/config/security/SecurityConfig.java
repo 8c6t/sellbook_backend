@@ -1,5 +1,6 @@
 package com.hachicore.sellbook.config.security;
 
+import com.hachicore.sellbook.config.security.jwt.JwtAuthenticationFilter;
 import com.hachicore.sellbook.config.security.jwt.JwtUtil;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
@@ -10,6 +11,8 @@ import org.springframework.security.config.annotation.web.configuration.WebSecur
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.factory.PasswordEncoderFactories;
 import org.springframework.security.crypto.password.PasswordEncoder;
+
+import javax.servlet.Filter;
 
 @Configuration
 @RequiredArgsConstructor
@@ -22,6 +25,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
             .csrf().disable()
             .formLogin().disable()
             .sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS)
+            .and().addFilter(jwtFilter())
         ;
 
         http.authorizeRequests()
@@ -42,6 +46,10 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
     @Bean
     public JwtUtil jwtUtil() {
         return new JwtUtil();
+    }
+
+    private Filter jwtFilter() throws Exception {
+        return new JwtAuthenticationFilter(authenticationManager(), jwtUtil());
     }
 
 }

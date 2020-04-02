@@ -1,6 +1,7 @@
 package com.hachicore.sellbook.config.security;
 
 import com.hachicore.sellbook.config.security.jwt.JwtAuthenticationFilter;
+import com.hachicore.sellbook.config.security.jwt.JwtLogoutSuccessHandler;
 import com.hachicore.sellbook.config.security.jwt.JwtUtil;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
@@ -11,6 +12,7 @@ import org.springframework.security.config.annotation.web.configuration.WebSecur
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.factory.PasswordEncoderFactories;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.web.authentication.logout.LogoutSuccessHandler;
 
 import javax.servlet.Filter;
 
@@ -26,6 +28,9 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
             .formLogin().disable()
             .sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS)
             .and().addFilter(jwtFilter())
+            .logout()
+                .logoutUrl("/logout")
+                .logoutSuccessHandler(jwtLogoutSuccessHandler())
         ;
 
         http.authorizeRequests()
@@ -50,6 +55,10 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
 
     private Filter jwtFilter() throws Exception {
         return new JwtAuthenticationFilter(authenticationManager(), jwtUtil());
+    }
+
+    private LogoutSuccessHandler jwtLogoutSuccessHandler() {
+        return new JwtLogoutSuccessHandler();
     }
 
 }

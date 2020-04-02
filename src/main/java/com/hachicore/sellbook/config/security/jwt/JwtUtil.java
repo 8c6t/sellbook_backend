@@ -9,6 +9,7 @@ import org.springframework.beans.factory.annotation.Value;
 
 import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 import java.util.Date;
 
 public class JwtUtil {
@@ -22,7 +23,7 @@ public class JwtUtil {
     public static final String HEADER_STRING = "Authorization";
     public static final String TOKEN_PREFIX = "Bearer ";
 
-    public String generateToken(Account account) {
+    private String generateToken(Account account) {
         Date now = new Date();
 
         return Jwts.builder()
@@ -74,6 +75,27 @@ public class JwtUtil {
                 .email(email)
                 .nickname(nickname)
                 .build();
+    }
+
+    public boolean needTokenRefresh(String token) {
+        Claims body = Jwts.parser()
+                .setSigningKey(secret)
+                .parseClaimsJws(token)
+                .getBody();
+
+        Date expiration = body.getExpiration();
+        Date now = new Date();
+
+        if (expiration.getTime() - now.getTime() < expirationDay / 2) {
+            return true;
+        }
+
+        return false;
+    }
+
+    public void refreshToken(Account account, HttpServletResponse response) {
+        Cookie cookie = generateJwtCookie(account);
+        response.addCookie(cookie);
     }
 
 }

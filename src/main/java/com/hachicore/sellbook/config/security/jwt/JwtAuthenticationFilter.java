@@ -1,6 +1,7 @@
 package com.hachicore.sellbook.config.security.jwt;
 
 import com.hachicore.sellbook.config.security.account.UserAccount;
+import com.hachicore.sellbook.domain.Account;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
@@ -26,7 +27,7 @@ public class JwtAuthenticationFilter extends BasicAuthenticationFilter {
 
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain chain) throws IOException, ServletException {
-        Authentication authentication = getAuthentication(request);
+        Authentication authentication = getAuthentication(request, response);
         if (authentication != null) {
             SecurityContextHolder.getContext().setAuthentication(authentication);
         }
@@ -34,21 +35,25 @@ public class JwtAuthenticationFilter extends BasicAuthenticationFilter {
         chain.doFilter(request, response);
     }
 
-    private Authentication getAuthentication(HttpServletRequest request) {
+    private Authentication getAuthentication(HttpServletRequest request, HttpServletResponse response) {
         String token = jwtUtil.getToken(request);
 
         if (token == null || !jwtUtil.validateToken(token)) {
             return null;
         }
 
-        // TODO: 2020.04.02. 토큰 만료 기간이 가까우면 재발행
-
         // TODO: 2020.04.02. 별도의 authentication token 객체 생성(AbstractAuthenticationToken)
+        Account account = jwtUtil.getAccount(token);
+
         Authentication authentication = new UsernamePasswordAuthenticationToken(
-                new UserAccount(jwtUtil.getAccount(token)),
+                new UserAccount(account),
                 "",
                 Collections.singleton(new SimpleGrantedAuthority("ROLE_USER"))
         );
+
+        if (jwtUtil.needTokenRefresh(token)) {
+            jwtUtil.refreshToken(account, response);
+        }
 
         return authentication;
     }

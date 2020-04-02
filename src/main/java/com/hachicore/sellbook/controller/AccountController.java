@@ -1,10 +1,12 @@
 package com.hachicore.sellbook.controller;
 
+import com.hachicore.sellbook.config.security.account.CurrentUser;
 import com.hachicore.sellbook.config.security.jwt.JwtUtil;
 import com.hachicore.sellbook.controller.form.LoginRequest;
 import com.hachicore.sellbook.controller.form.SignUpRequest;
 import com.hachicore.sellbook.controller.form.SignUpRequestValidator;
 import com.hachicore.sellbook.domain.Account;
+import com.hachicore.sellbook.dto.AccountDto;
 import com.hachicore.sellbook.service.AccountService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -49,6 +51,12 @@ public class AccountController {
 
         accountService.saveNewAccount(signUpRequest);
         return ResponseEntity.ok().build();
+    }
+
+    @GetMapping("/account")
+    public ResponseEntity currentUserInfo(@CurrentUser Account account) {
+        // 로그인 한 유저가 없다면 시큐리티 필터 선에서 걸러짐
+        return ResponseEntity.ok().body(new AccountDto(account));
     }
 
 }

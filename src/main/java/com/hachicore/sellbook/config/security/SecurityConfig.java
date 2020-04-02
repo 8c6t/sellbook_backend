@@ -3,6 +3,7 @@ package com.hachicore.sellbook.config.security;
 import com.hachicore.sellbook.config.security.jwt.JwtAuthenticationFilter;
 import com.hachicore.sellbook.config.security.jwt.JwtLogoutSuccessHandler;
 import com.hachicore.sellbook.config.security.jwt.JwtUtil;
+import com.hachicore.sellbook.repository.AccountRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -19,6 +20,8 @@ import javax.servlet.Filter;
 @Configuration
 @RequiredArgsConstructor
 public class SecurityConfig extends WebSecurityConfigurerAdapter {
+
+    private final AccountRepository accountRepository;
 
     @Override
     protected void configure(HttpSecurity http) throws Exception {
@@ -50,7 +53,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
 
     @Bean
     public JwtUtil jwtUtil() {
-        return new JwtUtil();
+        return new JwtUtil(accountRepository);
     }
 
     private Filter jwtFilter() throws Exception {

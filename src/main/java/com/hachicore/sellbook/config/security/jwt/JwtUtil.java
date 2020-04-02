@@ -1,11 +1,13 @@
 package com.hachicore.sellbook.config.security.jwt;
 
 import com.hachicore.sellbook.domain.Account;
+import com.hachicore.sellbook.repository.AccountRepository;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jws;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 
 import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
@@ -23,6 +25,12 @@ public class JwtUtil {
     public static final String HEADER_STRING = "Authorization";
     public static final String TOKEN_PREFIX = "Bearer ";
 
+    private AccountRepository accountRepository;
+
+    public JwtUtil(AccountRepository accountRepository) {
+        this.accountRepository = accountRepository;
+    }
+
     private String generateToken(Account account) {
         Date now = new Date();
 
@@ -38,7 +46,7 @@ public class JwtUtil {
 
     public Cookie generateJwtCookie(Account account) {
         Cookie cookie = new Cookie(JwtUtil.HEADER_STRING, generateToken(account));
-        cookie.setMaxAge(60 * 60 * 24);
+        cookie.setMaxAge((int) (expirationDay / 1000));
         cookie.setHttpOnly(true);
         return cookie;
     }
@@ -93,7 +101,10 @@ public class JwtUtil {
         return false;
     }
 
-    public void refreshToken(Account account, HttpServletResponse response) {
+    public void refreshToken(Long accountId, HttpServletResponse response) {
+        Account account = accountRepository.findById(accountId)
+                .orElseThrow(() -> new UsernameNotFoundException(""));
+
         Cookie cookie = generateJwtCookie(account);
         response.addCookie(cookie);
     }

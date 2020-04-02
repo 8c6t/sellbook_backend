@@ -52,7 +52,7 @@ public class JwtAuthenticationFilter extends BasicAuthenticationFilter {
         );
 
         if (jwtUtil.needTokenRefresh(token)) {
-            jwtUtil.refreshToken(account, response);
+            jwtUtil.refreshToken(account.getId(), response);
         }
 
         return authentication;

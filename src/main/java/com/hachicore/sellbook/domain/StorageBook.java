@@ -7,21 +7,17 @@ import javax.persistence.*;
 @Entity
 @Getter @EqualsAndHashCode(of = "id")
 @Builder @NoArgsConstructor(access = AccessLevel.PROTECTED) @AllArgsConstructor
-public class Account {
+public class StorageBook {
 
     @Id @GeneratedValue
-    @Column(name = "ACCOUNT_ID")
     private Long id;
 
-    @Column(unique = true)
-    private String email;
-
-    @Column(unique = true)
-    private String nickname;
-
-    private String password;
-
-    @OneToOne(mappedBy = "account")
+    @ManyToOne
+    @JoinColumn(name = "STORAGE_ID")
     private Storage storage;
+
+    @ManyToOne
+    @JoinColumn(name = "BOOK_ID")
+    private Book book;
 
 }

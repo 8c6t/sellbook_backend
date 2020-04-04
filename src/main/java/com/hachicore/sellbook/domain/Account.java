@@ -24,4 +24,9 @@ public class Account {
     @OneToOne(mappedBy = "account")
     private Storage storage;
 
+    // 연관관계 매핑용 메소드
+    public void linkStorage(Storage storage) {
+        this.storage = storage;
+    }
+
 }

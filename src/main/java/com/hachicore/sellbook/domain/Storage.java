@@ -15,11 +15,17 @@ public class Storage {
     @Column(name = "STORAGE_ID")
     private Long id;
 
-    @OneToOne
+    @OneToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
     @JoinColumn(name = "ACCOUNT_ID")
     private Account account;
 
+    @Builder.Default
     @OneToMany(mappedBy = "storage")
     private List<StorageBook> storageBooks = new ArrayList<>();
+
+    public void addAccount(Account account) {
+        this.account = account;
+        account.linkStorage(this);
+    }
 
 }

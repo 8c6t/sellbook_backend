@@ -2,10 +2,7 @@ package com.hachicore.sellbook.domain;
 
 import lombok.*;
 
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.Id;
+import javax.persistence.*;
 
 @Entity
 @Getter @EqualsAndHashCode(of = "id")
@@ -23,5 +20,13 @@ public class Account {
     private String nickname;
 
     private String password;
+
+    @OneToOne(mappedBy = "account")
+    private Storage storage;
+
+    // 연관관계 매핑용 메소드
+    public void linkStorage(Storage storage) {
+        this.storage = storage;
+    }
 
 }

@@ -40,6 +40,10 @@ public class Book {
     @BatchSize(size = 100)
     private List<SecondPrice> secondPrices = new ArrayList<>();
 
+    @Builder.Default
+    @OneToMany(mappedBy = "book")
+    private List<StorageBook> storageBooks = new ArrayList<>();
+
     public void updateSecondPriceDate() {
         this.updatedAt = LocalDate.now();
     }

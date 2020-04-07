@@ -102,7 +102,7 @@ public class SearchService {
         return Arrays.asList(result);
     }
 
-    private List<SecondPrice> saveSecondPrices(List<Book> savedBooks) {
+    public List<SecondPrice> saveSecondPrices(List<Book> savedBooks) {
         List<Book> filteredList = savedBooks.stream()
                 .filter(e -> e.getUpdatedAt() == null || e.getUpdatedAt().isBefore(LocalDate.now()))
                 .collect(toList());

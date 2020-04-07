@@ -5,7 +5,6 @@ import lombok.Getter;
 import lombok.Setter;
 
 import java.util.List;
-import java.util.stream.Collectors;
 
 @Getter @Setter
 public class BookDto {
@@ -27,8 +26,6 @@ public class BookDto {
         this.isbn = book.getIsbn();
         this.price = book.getPrice();
         this.image = book.getImage();
-        this.secondPrices = book.getSecondPrices().stream()
-                .map(SecondPriceDto::new)
-                .collect(Collectors.toList());
     }
+
 }

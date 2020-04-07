@@ -8,6 +8,7 @@ import com.hachicore.sellbook.api.secondprice.lambda.dto.SecondPriceResponse;
 import com.hachicore.sellbook.domain.Book;
 import com.hachicore.sellbook.domain.SecondPrice;
 import com.hachicore.sellbook.dto.BookDto;
+import com.hachicore.sellbook.dto.SecondPriceDto;
 import com.hachicore.sellbook.repository.BookRepository;
 import com.hachicore.sellbook.repository.SecondPriceRepository;
 import lombok.RequiredArgsConstructor;
@@ -22,7 +23,8 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
+
+import static java.util.stream.Collectors.*;
 
 @Service
 @Transactional(readOnly = true)
@@ -54,11 +56,10 @@ public class SearchService {
         List<Book> searchBookList = mapToEntity(searchResult.getData());
 
         List<Book> savedBookList = saveBooks(searchBookList);
-
-        saveSecondPrices(savedBookList);
+        List<SecondPrice> secondPrices = saveSecondPrices(savedBookList);
 
         return new PageImpl(
-                mapToDto(savedBookList),
+                mapToDto(savedBookList, secondPrices),
                 searchResult.getPageable(),
                 searchResult.getTotalCount()
         );
@@ -75,7 +76,7 @@ public class SearchService {
         }
 
         // 중고 가격 저장시 JPA 라이프사이클 문제로 1번 조회
-        alreadySavedBooks = bookRepository.findWithTodaySecondPrice(isbnList);
+        alreadySavedBooks = bookRepository.findAllByIsbnIn(isbnList);
 
         return sortByIsbn(alreadySavedBooks, isbnList);
     }
@@ -101,42 +102,55 @@ public class SearchService {
         return Arrays.asList(result);
     }
 
-    private void saveSecondPrices(List<Book> savedBooks) {
+    private List<SecondPrice> saveSecondPrices(List<Book> savedBooks) {
         List<Book> filteredList = savedBooks.stream()
                 .filter(e -> e.getUpdatedAt() == null || e.getUpdatedAt().isBefore(LocalDate.now()))
-                .collect(Collectors.toList());
+                .collect(toList());
 
         if (filteredList.size() > 0) {
             List<String> filteredIsbnList = getIsbnList(filteredList);  // 당일 기준으로 필터링
+            Map<String, Book> bookMap = filteredList.stream()
+                    .collect(toMap(e -> e.getIsbn(), e -> e));
+
             List<SecondPriceResponse> parseResult = priceParseApi.parseSecondPrices(filteredIsbnList);  // DB에 없으면 API 호출
 
             List<SecondPrice> secondPrices = parseResult.stream()
-                    .map(secondPriceDto -> {
-                        Book savedBook = savedBooks.stream()
-                                .filter(book -> book.getIsbn().equals(secondPriceDto.getIsbn13()))
-                                .findFirst().get();
+                    .map(apiSecondPrice -> {
+                        SecondPrice secondPrice = apiSecondPrice.toEntity();
+                        secondPrice.addBook(bookMap.get(apiSecondPrice.getIsbn13()));
 
-                        SecondPrice secondPrice = secondPriceDto.toEntity();
-                        secondPrice.addBook(savedBook);
                         return secondPrice;
                     })
-                    .collect(Collectors.toList());
+                    .collect(toList());
 
             // API 결과 저장
             secondPriceRepository.saveAll(secondPrices);
         }
+
+        return secondPriceRepository.findTodayByBook(savedBooks);
     }
 
     private List<Book> mapToEntity(List<? extends BookResponse> data) {
         return data.stream()
                 .map(BookResponse::toEntity)
-                .collect(Collectors.toList());
+                .collect(toList());
     }
 
-    private List<BookDto> mapToDto(List<Book> savedBooks) {
-        List<BookDto> result = savedBooks.stream()
+    private List<BookDto> mapToDto(List<Book> bookList, List<SecondPrice> secondPriceList) {
+        List<BookDto> result = bookList.stream()
                 .map(BookDto::new)
-                .collect(Collectors.toList());
+                .collect(toList());
+
+        Map<String, List<SecondPrice>> secondPriceMap = secondPriceList.stream()
+                .collect(groupingBy(e -> e.getBook().getIsbn()));
+
+        result.forEach(e -> {
+            List<SecondPriceDto> secondPriceDtoList = secondPriceMap.get(e.getIsbn()).stream()
+                    .map(SecondPriceDto::new)
+                    .collect(toList());
+
+            e.setSecondPrices(secondPriceDtoList);
+        });
 
         return result;
     }
@@ -144,7 +158,7 @@ public class SearchService {
     private List<String> getIsbnList(List<Book> books) {
         return books.stream()
                 .map(Book::getIsbn)
-                .collect(Collectors.toList());
+                .collect(toList());
     }
 
 }

@@ -9,7 +9,7 @@
         <relativePath/> <!-- lookup parent from repository -->
     </parent>
     <groupId>com.hachicore</groupId>
-    <artifactId>sellbook</artifactId>
+    <artifactId>sellbook-api</artifactId>
     <version>0.0.1-SNAPSHOT</version>
     <name>sellbook</name>
     <description>Used book price comparison project</description>

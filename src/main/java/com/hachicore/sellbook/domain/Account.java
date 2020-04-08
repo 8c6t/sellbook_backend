@@ -9,7 +9,7 @@ import javax.persistence.*;
 @Builder @NoArgsConstructor(access = AccessLevel.PROTECTED) @AllArgsConstructor
 public class Account {
 
-    @Id @GeneratedValue
+    @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "ACCOUNT_ID")
     private Long id;
 

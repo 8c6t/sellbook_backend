@@ -1,20 +1,19 @@
 package com.hachicore.sellbook.domain;
 
-import com.hachicore.sellbook.config.JpaConfig;
 import com.hachicore.sellbook.repository.BookRepository;
 import com.hachicore.sellbook.repository.SecondPriceRepository;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
-import org.springframework.context.annotation.Import;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.transaction.annotation.Transactional;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
 
-@DataJpaTest
-@Import(JpaConfig.class)
+@SpringBootTest
+@Transactional
 class BookSecondPriceEventTest {
 
     @Autowired BookRepository bookRepository;

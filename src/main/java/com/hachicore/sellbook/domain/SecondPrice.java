@@ -16,7 +16,7 @@ import java.time.LocalDate;
 @EntityListeners(AuditingEntityListener.class)
 public class SecondPrice extends AbstractAggregateRoot<SecondPrice> {
 
-    @Id @GeneratedValue
+    @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "SECOND_PRICE_ID")
     private Long id;
 

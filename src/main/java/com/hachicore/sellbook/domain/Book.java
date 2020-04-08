@@ -14,7 +14,7 @@ import java.util.List;
 @ToString(exclude = "secondPrices")
 public class Book {
 
-    @Id @GeneratedValue
+    @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "BOOK_ID")
     private Long id;
 

@@ -11,7 +11,7 @@ import java.util.List;
 @Builder @NoArgsConstructor(access = AccessLevel.PROTECTED) @AllArgsConstructor
 public class Storage {
 
-    @Id @GeneratedValue
+    @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "STORAGE_ID")
     private Long id;
 

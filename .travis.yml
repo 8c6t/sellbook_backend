@@ -35,4 +35,14 @@ deploy:
     acl: private
     local_dir: deploy
     wait_until_deployed: true
-    
+
+  - provider: codedeploy
+    access_key_id: $AWS_ACCESS_KEY
+    secret_access_key: $AWS_SECRET_KEY
+    bucket: sellbook-api-build
+    key: sellbook-api.zip
+    bundle_type: zip
+    application: sellbook-api
+    deployment_group: sellbook-api-group
+    region: ap-northeast-2
+    wait_until_deployed: true

@@ -44,14 +44,18 @@ public class AccountController {
     }
 
     @PostMapping("/account")
-    public ResponseEntity signUp(@RequestBody @Valid SignUpRequest signUpRequest, Errors errors) {
+    public ResponseEntity signUp(@RequestBody @Valid SignUpRequest signUpRequest, Errors errors, HttpServletResponse response) {
         if (errors.hasErrors()) {
             // TODO 2020.04.15 별도 에러 객체로 json 형태 리턴할 수 있도록...
             return ResponseEntity.badRequest().body("올바른 값을 입력하세요");
         }
 
-        accountService.saveNewAccount(signUpRequest);
-        return ResponseEntity.ok().build();
+        Account account = accountService.saveNewAccount(signUpRequest);
+
+        Cookie cookie = jwtUtil.generateAccessTokenCookie(account);
+        response.addCookie(cookie);
+
+        return ResponseEntity.ok().body(new AccountDto(account));
     }
 
     @GetMapping("/account")

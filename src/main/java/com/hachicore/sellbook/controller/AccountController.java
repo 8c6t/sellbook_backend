@@ -4,7 +4,7 @@ import com.hachicore.sellbook.config.security.account.CurrentUser;
 import com.hachicore.sellbook.config.security.jwt.JwtUtil;
 import com.hachicore.sellbook.controller.form.LoginRequest;
 import com.hachicore.sellbook.controller.form.SignUpRequest;
-import com.hachicore.sellbook.controller.form.SignUpRequestValidator;
+import com.hachicore.sellbook.controller.validator.SignUpRequestValidator;
 import com.hachicore.sellbook.domain.Account;
 import com.hachicore.sellbook.dto.AccountDto;
 import com.hachicore.sellbook.service.AccountService;
@@ -46,7 +46,7 @@ public class AccountController {
     @PostMapping("/account")
     public ResponseEntity signUp(@RequestBody @Valid SignUpRequest signUpRequest, Errors errors) {
         if (errors.hasErrors()) {
-            ResponseEntity.badRequest().body("올바른 값을 입력하세요");
+            return ResponseEntity.badRequest().body("올바른 값을 입력하세요");
         }
 
         accountService.saveNewAccount(signUpRequest);

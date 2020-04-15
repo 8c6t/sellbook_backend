@@ -1,5 +1,6 @@
-package com.hachicore.sellbook.controller.form;
+package com.hachicore.sellbook.controller.validator;
 
+import com.hachicore.sellbook.controller.form.SignUpRequest;
 import com.hachicore.sellbook.repository.AccountRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;

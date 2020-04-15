@@ -7,6 +7,7 @@ import com.hachicore.sellbook.domain.Storage;
 import com.hachicore.sellbook.repository.AccountRepository;
 import com.hachicore.sellbook.repository.StorageRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -31,8 +32,7 @@ public class AccountService {
         boolean validate = passwordEncoder.matches(loginRequest.getPassword(), account.getPassword());
 
         if (!validate) {
-            // TODO: 2020.04.02. 별도의 exception 생성
-            throw new RuntimeException("비밀번호 불일치");
+            throw new BadCredentialsException("비밀번호 불일치");
         }
 
         return account;

@@ -9,15 +9,22 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
+import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.factory.PasswordEncoderFactories;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.authentication.logout.LogoutSuccessHandler;
+import org.springframework.web.cors.CorsConfiguration;
+import org.springframework.web.cors.CorsConfigurationSource;
+import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
 import javax.servlet.Filter;
 
+import static java.util.Arrays.asList;
+
 @Configuration
+@EnableWebSecurity
 @RequiredArgsConstructor
 public class SecurityConfig extends WebSecurityConfigurerAdapter {
 
@@ -26,13 +33,13 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
     @Override
     protected void configure(HttpSecurity http) throws Exception {
         http
-            .cors().disable()
+            .cors().and()
             .csrf().disable()
             .formLogin().disable()
             .sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS)
             .and().addFilter(jwtFilter())
             .logout()
-                .logoutUrl("/logout")
+                .logoutUrl("/api/auth/logout")
                 .logoutSuccessHandler(jwtLogoutSuccessHandler())
         ;
 
@@ -44,6 +51,20 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
             .anyRequest()
                 .authenticated()
         ;
+    }
+
+    @Bean
+    public CorsConfigurationSource corsConfigurationSource() {
+        CorsConfiguration configuration = new CorsConfiguration();
+        configuration.setAllowedOrigins(asList("*"));
+        configuration.setAllowedMethods(asList("HEAD", "GET", "POST", "PUT", "DELETE"));
+        configuration.setAllowCredentials(true);
+        configuration.setAllowedHeaders(asList("Authorization", "TOKEN_ID", "X-Requested-With", "Authorization", "Content-Type", "Content-Length", "Cache-Control"));
+
+        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
+        source.registerCorsConfiguration("/**", configuration);
+
+        return source;
     }
 
     @Bean

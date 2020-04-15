@@ -13,8 +13,10 @@ public class JwtLogoutSuccessHandler extends SimpleUrlLogoutSuccessHandler {
 
     @Override
     public void onLogoutSuccess(HttpServletRequest request, HttpServletResponse response, Authentication authentication) throws IOException, ServletException {
-        Cookie cookie = new Cookie(JwtUtil.HEADER_STRING, null);
+        Cookie cookie = new Cookie(JwtUtil.COOKIE_NAME, null);
         cookie.setMaxAge(0);
+        cookie.setPath("/");
+        cookie.setHttpOnly(true);
 
         response.addCookie(cookie);
         response.setStatus(HttpServletResponse.SC_NO_CONTENT);

@@ -8,6 +8,7 @@ import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
+import org.springframework.web.util.WebUtils;
 
 import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
@@ -22,8 +23,7 @@ public class JwtUtil {
     @Value("#{${jwt.expiration} * 1000 * 60 * 60 * 24}")
     private Long expirationDay;
 
-    public static final String HEADER_STRING = "Authorization";
-    public static final String TOKEN_PREFIX = "Bearer ";
+    public static final String COOKIE_NAME = "access_token";
 
     private AccountRepository accountRepository;
 
@@ -44,9 +44,10 @@ public class JwtUtil {
                 .compact();
     }
 
-    public Cookie generateJwtCookie(Account account) {
-        Cookie cookie = new Cookie(JwtUtil.HEADER_STRING, generateToken(account));
+    public Cookie generateAccessTokenCookie(Account account) {
+        Cookie cookie = new Cookie(COOKIE_NAME, generateToken(account));
         cookie.setMaxAge((int) (expirationDay / 1000));
+        cookie.setPath("/");
         cookie.setHttpOnly(true);
         return cookie;
     }
@@ -64,8 +65,8 @@ public class JwtUtil {
     }
 
     public String getToken(HttpServletRequest req) {
-        String token = req.getHeader(HEADER_STRING);
-        return token == null ? null : token.replaceFirst(TOKEN_PREFIX, "");
+        Cookie cookie = WebUtils.getCookie(req, COOKIE_NAME);
+        return cookie == null ? null : cookie.getValue();
     }
 
     public Account getAccount(String token) {
@@ -105,7 +106,7 @@ public class JwtUtil {
         Account account = accountRepository.findById(accountId)
                 .orElseThrow(() -> new UsernameNotFoundException(""));
 
-        Cookie cookie = generateJwtCookie(account);
+        Cookie cookie = generateAccessTokenCookie(account);
         response.addCookie(cookie);
     }
 

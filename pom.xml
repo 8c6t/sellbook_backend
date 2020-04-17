@@ -10,7 +10,7 @@
     </parent>
     <groupId>com.hachicore</groupId>
     <artifactId>sellbook-api</artifactId>
-    <version>0.0.1-SNAPSHOT</version>
+    <version>0.0.1-SNAPSHOT-${buildtime}</version>
     <name>sellbook</name>
     <description>Used book price comparison project</description>
 
@@ -77,6 +77,25 @@
             <plugin>
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-maven-plugin</artifactId>
+            </plugin>
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>build-helper-maven-plugin</artifactId>
+                <version>3.1.0</version>
+                <executions>
+                    <execution>
+                        <id>timestamp-property</id>
+                        <goals>
+                            <goal>timestamp-property</goal>
+                        </goals>
+                        <configuration>
+                            <name>buildtime</name>
+                            <pattern>yyyyMMddHHmmss</pattern>
+                            <locale>en,US</locale>
+                            <timeZone>Asia/Seoul</timeZone>
+                        </configuration>
+                    </execution>
+                </executions>
             </plugin>
         </plugins>
     </build>

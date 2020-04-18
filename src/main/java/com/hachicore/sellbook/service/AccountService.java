@@ -26,7 +26,7 @@ public class AccountService {
         String emailOrNickname = loginRequest.getUsername();
 
         Account account = accountRepository.findByEmail(emailOrNickname)
-                .orElse(accountRepository.findByNickname(emailOrNickname)
+                .orElseGet(() -> accountRepository.findByNickname(emailOrNickname)
                 .orElseThrow(() -> new UsernameNotFoundException(emailOrNickname)));
 
         boolean validate = passwordEncoder.matches(loginRequest.getPassword(), account.getPassword());
